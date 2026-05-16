@@ -8,13 +8,11 @@ To write a program to implement the the Logistic Regression Model to Predict the
 2. Anaconda – Python 3.7 Installation / Jupyter notebook
 
 ## Algorithm
-1.Load and preprocess the dataset (remove unwanted columns and convert categorical data).
-
-2.Split the data into training and testing sets.
-
-3.Train the Logistic Regression model using the training data.
-
-4.Evaluate accuracy and visualize results using a sigmoid curve plot.
+1.Read the dataset and create a copy of the data.
+2.Remove unwanted columns and check missing/duplicate values.
+3.Convert categorical data into numerical form using Label Encoding.
+4.Split the dataset into training and testing data and train the Logistic Regression model.
+5.Predict the results and evaluate the model using accuracy, confusion matrix, and classification report.
 
 ## Program:
 ```python 
@@ -24,40 +22,70 @@ Developed by:MOKESH C
 RegisterNumber:212225240088
 */
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
+
+data = pd.read_csv("Placement_Data.csv")
+print(data.head())
+
+data1 = data.copy()
+
+data1.drop(['sl_no', 'salary'], axis=1, inplace=True)
+
+print("\nMissing values:\n", data1.isnull().sum())
+print("\nDuplicate values:", data1.duplicated().sum())
+
+from sklearn.preprocessing import LabelEncoder
+
+le = LabelEncoder()
+data1['gender'] = le.fit_transform(data1['gender'])
+data1['ssc_b'] = le.fit_transform(data1['ssc_b'])
+data1['hsc_b'] = le.fit_transform(data1['hsc_b'])
+data1['hsc_s'] = le.fit_transform(data1['hsc_s'])
+data1['degree_t'] = le.fit_transform(data1['degree_t'])
+data1['workex'] = le.fit_transform(data1['workex'])
+data1['specialisation'] = le.fit_transform(data1['specialisation'])
+data1['status'] = le.fit_transform(data1['status'])
+
+x = data1.iloc[:, :-1]
+y = data1['status']
+
 from sklearn.model_selection import train_test_split
+
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=0
+)
+
 from sklearn.linear_model import LogisticRegression
 
-# Load & preprocess data
-data = pd.read_csv("Placement_Data (1).csv").drop("salary", axis=1)
-data = pd.get_dummies(data, drop_first=True)
+lr = LogisticRegression(solver='liblinear')
+lr.fit(x_train, y_train)
 
-X = data.drop("status_Placed", axis=1)
-y = data["status_Placed"]
+y_pred = lr.predict(x_test)
 
-# Train model
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model = LogisticRegression(max_iter=1000).fit(X_train, y_train)
+from sklearn.metrics import accuracy_score
+print("\nAccuracy:", accuracy_score(y_test, y_pred))
 
-print("Accuracy:", model.score(X_test, y_test))
+from sklearn.metrics import confusion_matrix
+confusion = confusion_matrix(y_test, y_pred)
+print("\nConfusion Matrix:\n", confusion)
 
-# Plot (using one feature)
-X1 = X.iloc[:, 0].values.reshape(-1, 1)
-model_plot = LogisticRegression(max_iter=1000).fit(X1, y)
+from sklearn.metrics import classification_report
+print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-plt.scatter(X1, y)
-x_vals = np.linspace(X1.min(), X1.max(), 100)
-plt.plot(x_vals, model_plot.predict_proba(x_vals.reshape(-1,1))[:,1])
+from sklearn import metrics
 
-plt.xlabel("Feature")
-plt.ylabel("Probability")
-plt.title("Logistic Regression Curve")
+cm_display = metrics.ConfusionMatrixDisplay(
+    confusion_matrix=confusion,
+    display_labels=['Not Placed', 'Placed']
+)
+
+cm_display.plot()
 plt.show()
 ```
 
 ## Output:
-<img width="1057" height="677" alt="Screenshot 2026-05-02 160421" src="https://github.com/user-attachments/assets/428dc2df-59c5-483a-a7ed-384047c53d91" />
+<img width="893" height="690" alt="Screenshot 2026-05-15 162003" src="https://github.com/user-attachments/assets/d992a6fd-4fb2-472e-bb54-97246bd03d0e" />
+
 
 
 
